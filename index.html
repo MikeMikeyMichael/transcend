@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gamma I Fund LP</title>
+
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+
+  <!-- Favicon -->
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+
+  <style>
+    :root { --bg:#e8e8e8; --fg:#0c0c0c; --muted:#4a4a4a; --overlay:#f2f2f2; }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font-family:"Instrument Serif",serif;line-height:1.35;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+
+    a{color:inherit;text-decoration:none;border-bottom:1px solid rgba(0,0,0,.25)}
+    a:hover{border-bottom-color:rgba(0,0,0,.6)}
+    .wrap{max-width:1200px;margin:0 auto;padding:40px 28px}
+    header{height:64px;display:flex;align-items:center}
+    .brand{font-size:20px;letter-spacing:.2px}
+    .hero{display:grid;grid-template-columns:1fr 1fr;gap:48px;min-height:55vh;align-items:center;padding:40px 0 80px}
+    .title{font-size:clamp(44px,6.2vw,84px);font-weight:400;letter-spacing:.2px}
+    .lede{font-size:clamp(18px,1.8vw,22px);color:var(--muted);max-width:640px}
+    .lede p{margin:0 0 14px 0}
+    footer{border-top:1px solid rgba(0,0,0,.08);padding:36px 0 24px;margin-top:24px}
+    .footer-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:24px;font-size:16px}
+    .small{font-size:15px;color:var(--muted)}
+    .label{font-size:18px;margin-bottom:10px}
+    @media (max-width:900px){.hero{grid-template-columns:1fr;gap:28px;min-height:0}.footer-grid{grid-template-columns:1fr;gap:16px}}
+
+    /* Password overlay */
+    #gate {
+      position: fixed; inset: 0;
+      display: grid; place-items: center;
+      background: radial-gradient(1200px 600px at 50% 20%, #ffffff 0%, var(--overlay) 60%, var(--bg) 100%);
+      transition: opacity .45s ease, visibility .45s ease;
+      z-index: 9999;
+    }
+    #gate.hidden { opacity: 0; visibility: hidden; }
+    .card {
+      width: min(92vw, 460px);
+      background: #fff;
+      border-radius: 18px;
+      padding: 28px 24px;
+      box-shadow: 0 20px 50px rgba(0,0,0,.12);
+      text-align: center;
+    }
+    .card h1 { margin: 0 0 10px 0; font-weight: 400; }
+    .card p { margin: 0 0 18px 0; color: var(--muted); }
+    .row { display: flex; gap: 10px; }
+    input[type="password"]{
+      flex: 1; padding: 12px 14px; font-size: 18px;
+      border-radius: 12px; border: 1px solid rgba(0,0,0,.15);
+      background: #fafafa; outline: none;
+    }
+    button{
+      padding: 12px 16px; font-size: 18px; border: 0;
+      border-radius: 12px; background: #111; color: #fff; cursor: pointer;
+    }
+    .err { margin-top: 10px; color: #b00020; min-height: 1.2em; }
+
+    /* Site fade in after unlock */
+    main { opacity: 0; transition: opacity .45s ease; }
+    main.visible { opacity: 1; }
+  </style>
+</head>
+<body>
+  <!-- Password Gate -->
+  <div id="gate" aria-modal="true" role="dialog">
+    <div class="card">
+      <h1>Access</h1>
+      <p>Enter password to view this page.</p>
+      <form id="gateForm" class="row" autocomplete="off">
+        <input id="pw" type="password" inputmode="text" placeholder="Password" aria-label="Password" />
+        <button type="submit">Enter</button>
+      </form>
+      <div id="err" class="err"></div>
+    </div>
+  </div>
+
+  <!-- Actual Site -->
+  <main id="site">
+    <div class="wrap">
+      <header><div class="brand">Transcend AI</div></header>
+
+      <section class="hero">
+        <div class="title">Gamma I Fund LP</div>
+        <div class="lede">
+          <p>Transcend AI is the general partner of Gamma I Fund LP.</p>
+          <p>We develop automated trading systems leveraging advanced GPU infrastructure.</p>
+        </div>
+      </section>
+
+      <footer>
+        <div class="footer-grid">
+          <div>
+            <div class="small">Transcend AI, LLC</div>
+            <div class="small">
+              <a href="https://adviserinfo.sec.gov/firm/summary/332999" target="_blank" rel="noopener">CRD # 332999</a>
+            </div>
+          </div>
+          <div>
+            <div class="label">Location</div>
+            <div class="small">861 Channing Ave<br/>Palo Alto, CA 94301</div>
+          </div>
+          <div>
+            <div class="label">Contact</div>
+            <div class="small">
+              <a href="mailto:contact@transcendaillc.com">contact@transcendaillc.com</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </main>
+
+  <script>
+    // Config
+    const PASSWORD = "LP";            // change here if needed
+    const KEY = "gate_unlocked_v1";   // sessionStorage key
+
+    const gate = document.getElementById("gate");
+    const form = document.getElementById("gateForm");
+    const pw = document.getElementById("pw");
+    const err = document.getElementById("err");
+    const site = document.getElementById("site");
+
+    function unlock() {
+      gate.classList.add("hidden");
+      site.classList.add("visible");
+    }
+
+    // If already unlocked in this tab, skip gate
+    try {
+      if (sessionStorage.getItem(KEY) === "1") unlock();
+    } catch(e) {}
+
+    form.addEventListener("submit", function(e){
+      e.preventDefault();
+      if ((pw.value || "").trim() === PASSWORD) {
+        try { sessionStorage.setItem(KEY, "1"); } catch(e) {}
+        unlock();
+      } else {
+        err.textContent = "Wrong password.";
+        pw.focus();
+        pw.select();
+      }
+    });
+
+    // Convenience: hit Enter immediately after loading
+    pw.addEventListener("keyup", function(ev){
+      if (ev.key === "Enter") form.dispatchEvent(new Event("submit"));
+    });
+  </script>
+</body>
+</html>
