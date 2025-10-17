@@ -76,7 +76,7 @@
       <h1>Access</h1>
       <p>Enter password to view this page.</p>
       <form id="gateForm" class="row" autocomplete="off">
-        <input id="pw" type="password" inputmode="text" placeholder="Password" aria-label="Password" />
+        <input id="pw" type="password" inputmode="text" placeholder="Password" aria-label="Password" autofocus />
         <button type="submit">Enter</button>
       </form>
       <div id="err" class="err"></div>
@@ -121,7 +121,7 @@
 
   <script>
     // Config
-    const PASSWORD = "LP";            // change here if needed
+    const PASSWORD = "paloalto";      // password
     const KEY = "gate_unlocked_v1";   // sessionStorage key
 
     const gate = document.getElementById("gate");
@@ -140,9 +140,13 @@
       if (sessionStorage.getItem(KEY) === "1") unlock();
     } catch(e) {}
 
+    // Make sure overlay grabs focus so typing works everywhere
+    window.addEventListener("load", () => { try { pw.focus(); } catch(e) {} });
+
     form.addEventListener("submit", function(e){
       e.preventDefault();
-      if ((pw.value || "").trim() === PASSWORD) {
+      const val = (pw.value || "").trim();
+      if (val === PASSWORD) {
         try { sessionStorage.setItem(KEY, "1"); } catch(e) {}
         unlock();
       } else {
@@ -152,7 +156,7 @@
       }
     });
 
-    // Convenience: hit Enter immediately after loading
+    // Allow pressing Enter
     pw.addEventListener("keyup", function(ev){
       if (ev.key === "Enter") form.dispatchEvent(new Event("submit"));
     });
