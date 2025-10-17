@@ -34,39 +34,19 @@
     @media (max-width:900px){.hero{grid-template-columns:1fr;gap:28px;min-height:0}.footer-grid{grid-template-columns:1fr;gap:16px}}
 
     /* Password overlay */
-    #gate {
-      position: fixed; inset: 0;
-      display: grid; place-items: center;
-      background: radial-gradient(1200px 600px at 50% 20%, #ffffff 0%, var(--overlay) 60%, var(--bg) 100%);
-      transition: opacity .45s ease, visibility .45s ease;
-      z-index: 9999;
-    }
-    #gate.hidden { opacity: 0; visibility: hidden; }
-    .card {
-      width: min(92vw, 460px);
-      background: #fff;
-      border-radius: 18px;
-      padding: 28px 24px;
-      box-shadow: 0 20px 50px rgba(0,0,0,.12);
-      text-align: center;
-    }
-    .card h1 { margin: 0 0 10px 0; font-weight: 400; }
-    .card p { margin: 0 0 18px 0; color: var(--muted); }
-    .row { display: flex; gap: 10px; }
-    input[type="password"]{
-      flex: 1; padding: 12px 14px; font-size: 18px;
-      border-radius: 12px; border: 1px solid rgba(0,0,0,.15);
-      background: #fafafa; outline: none;
-    }
-    button{
-      padding: 12px 16px; font-size: 18px; border: 0;
-      border-radius: 12px; background: #111; color: #fff; cursor: pointer;
-    }
-    .err { margin-top: 10px; color: #b00020; min-height: 1.2em; }
+    #gate { position:fixed; inset:0; display:grid; place-items:center; background:radial-gradient(1200px 600px at 50% 20%, #ffffff 0%, var(--overlay) 60%, var(--bg) 100%); transition:opacity .45s ease, visibility .45s ease; z-index:9999; }
+    #gate.hidden { opacity:0; visibility:hidden; }
+    .card { width:min(92vw,460px); background:#fff; border-radius:18px; padding:28px 24px; box-shadow:0 20px 50px rgba(0,0,0,.12); text-align:center; }
+    .card h1 { margin:0 0 10px 0; font-weight:400; }
+    .card p { margin:0 0 18px 0; color:var(--muted); }
+    .row { display:flex; gap:10px; }
+    input[type="password"]{ flex:1; padding:12px 14px; font-size:18px; border-radius:12px; border:1px solid rgba(0,0,0,.15); background:#fafafa; outline:none; }
+    button{ padding:12px 16px; font-size:18px; border:0; border-radius:12px; background:#111; color:#fff; cursor:pointer; }
+    .err{ margin-top:10px; color:#b00020; min-height:1.2em; }
 
     /* Site fade in after unlock */
-    main { opacity: 0; transition: opacity .45s ease; }
-    main.visible { opacity: 1; }
+    main { opacity:0; transition:opacity .45s ease; }
+    main.visible { opacity:1; }
   </style>
 </head>
 <body>
@@ -75,10 +55,10 @@
     <div class="card">
       <h1>Access</h1>
       <p>Enter password to view this page.</p>
-      <form id="gateForm" class="row" autocomplete="off">
-        <input id="pw" type="password" inputmode="text" placeholder="Password" aria-label="Password" autofocus />
-        <button type="submit">Enter</button>
-      </form>
+      <div class="row">
+        <input id="pw" type="password" placeholder="Password" aria-label="Password" autocomplete="off" />
+        <button id="go" type="button">Enter</button>
+      </div>
       <div id="err" class="err"></div>
     </div>
   </div>
@@ -110,9 +90,7 @@
           </div>
           <div>
             <div class="label">Contact</div>
-            <div class="small">
-              <a href="mailto:contact@transcendaillc.com">contact@transcendaillc.com</a>
-            </div>
+            <div class="small"><a href="mailto:contact@transcendaillc.com">contact@transcendaillc.com</a></div>
           </div>
         </div>
       </footer>
@@ -121,45 +99,50 @@
 
   <script>
     // Config
-    const PASSWORD = "paloalto";      // password
-    const KEY = "gate_unlocked_v1";   // sessionStorage key
+    const PASSWORD = "paloalto";
+    const KEY = "gate_unlocked_v2"; // new key to avoid any stale state
 
     const gate = document.getElementById("gate");
-    const form = document.getElementById("gateForm");
-    const pw = document.getElementById("pw");
-    const err = document.getElementById("err");
     const site = document.getElementById("site");
+    const pw = document.getElementById("pw");
+    const go = document.getElementById("go");
+    const err = document.getElementById("err");
 
     function unlock() {
       gate.classList.add("hidden");
       site.classList.add("visible");
     }
 
-    // If already unlocked in this tab, skip gate
-    try {
-      if (sessionStorage.getItem(KEY) === "1") unlock();
-    } catch(e) {}
+    // If already unlocked this tab, skip
+    try { if (sessionStorage.getItem(KEY) === "1") unlock(); } catch(e) {}
 
-    // Make sure overlay grabs focus so typing works everywhere
-    window.addEventListener("load", () => { try { pw.focus(); } catch(e) {} });
+    // Focus the field
+    window.addEventListener("load", () => { pw.focus(); });
 
-    form.addEventListener("submit", function(e){
-      e.preventDefault();
-      const val = (pw.value || "").trim();
+    function check() {
+      const val = (pw.value || "").trim().toLowerCase();
       if (val === PASSWORD) {
         try { sessionStorage.setItem(KEY, "1"); } catch(e) {}
         unlock();
       } else {
         err.textContent = "Wrong password.";
-        pw.focus();
-        pw.select();
+        pw.focus(); pw.select();
       }
-    });
+    }
 
-    // Allow pressing Enter
-    pw.addEventListener("keyup", function(ev){
-      if (ev.key === "Enter") form.dispatchEvent(new Event("submit"));
-    });
+    go.addEventListener("click", check);
+    pw.addEventListener("keydown", e => { if (e.key === "Enter") check(); });
+
+    // Robust fallback if something odd blocks the overlay
+    setTimeout(() => {
+      if (!site.classList.contains("visible")) {
+        const a = prompt("Enter password to view this page:");
+        if ((a || "").trim().toLowerCase() === PASSWORD) {
+          try { sessionStorage.setItem(KEY, "1"); } catch(e) {}
+          unlock();
+        }
+      }
+    }, 300);
   </script>
 </body>
 </html>
